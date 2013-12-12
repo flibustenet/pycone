@@ -117,6 +117,7 @@ class Cone(object):
         return klass
 
     def resource(self, *args, **kwargs):
+        """Define a resource"""
         if args:
             return self.register_resource({}, args[0])
         return partial(self.register_resource, kwargs)
@@ -141,6 +142,7 @@ class Cone(object):
         return klass
 
     def controller(self, *args, **kwargs):
+        """Define a controller"""
         if args:
             return self.register_class({}, args[0])
         return partial(self.register_class, kwargs)
@@ -169,18 +171,23 @@ class Cone(object):
             return partial(register_func, request_method, list(args), kwargs)
 
     def route(self, *args, **kwargs):
+        """Add a route"""
         return self.register_func(None, args, kwargs)
 
     def get(self, *args, **kwargs):
+        """A a GET only route"""
         return self.register_func('GET', args, kwargs)
 
     def post(self, *args, **kwargs):
+        """A a POST only route"""
         return self.register_func('POST', args, kwargs)
 
     def put(self, *args, **kwargs):
+        """A a PUT only route"""
         return self.register_func('PUT', args, kwargs)
 
     def delete(self, *args, **kwargs):
+        """A a DELETE only route"""
         return self.register_func('DELETE', args, kwargs)
 
     def predicates(self, **kwargs):
@@ -205,6 +212,7 @@ class Cone(object):
         return wrapper
 
     def view_attr(self, *args, **kwargs):
+        """Define a class method as route"""
         if args:
             kwargs['request_method'] = 'GET'
             return self.predicates(**kwargs)(*args)
@@ -212,9 +220,11 @@ class Cone(object):
             return self.predicates(**kwargs)
 
     def json(self, obj):
+        """Set view predicate as json"""
         return self.predicates(renderer='json', accept='application/json')(obj)
 
     def renderer(self, renderer=None):
+        """Set view renderer"""
         if renderer:
             return self.predicates(renderer=renderer)
         else:
@@ -222,21 +232,26 @@ class Cone(object):
 
     @property
     def wsgi_app(self):
+        """Return the wsgi application"""
         for include in self.includes:
             self.include(include)
         return self.config.make_wsgi_app()
 
     @property
     def test_app(self):
+        """Return the wsgi application wrapped in a webtest.TestApp"""
         return TestApp(self.wsgi_app)
 
     def test(self, func):
+        """Define a function as a unit test. The function must take an app
+        argument"""
         @wraps(func)
         def wrapper():
             return func(self.test_app)
         return wrapper
 
     def run(self):
+        """Run a wsgi server to serve the application"""
         from .scripts import Cmd
         cmd = Cmd(self)
         cmd.run()
